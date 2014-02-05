@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+#define __TCPSOCKET_HIDDEN_FROM_SOURCE__
 #include "TCPSocket.hh"
 
 using namespace std;
@@ -35,7 +36,7 @@ TCPSocket::~TCPSocket() {
   ip_ = NULL;
 }
 
-void TCPSocket::_reuseAddr(bool var) {
+void TCPSocket::reuseAddr(bool var) {
   reuseaddr_ = var;
 }
 
@@ -161,17 +162,18 @@ string TCPSocket::_recv(int num) {
   return return_value;
 }
 
-void TCPSocket::_send(const string &message) {
+int TCPSocket::_send(const string &message) {
   const char *data = message.c_str();
   int data_left = strlen(data);
   while (data_left > 0) {
     int tmp = send(sock_, data +strlen(data) -data_left, data_left, 0);
     if (tmp == -1) {
       cerr << "Failed to send!\n";
-      return;
+      return 1;
     }
     data_left -= tmp;
   }
+  return 0;
 }
 
 void TCPSocket::_close() {
@@ -180,6 +182,6 @@ void TCPSocket::_close() {
   ip_ = NULL;
 }
 
-string TCPSocket::_getHostname() {
+string TCPSocket::getHostname() {
   return string(ip_);
 }
