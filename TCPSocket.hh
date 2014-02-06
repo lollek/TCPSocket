@@ -29,13 +29,13 @@ class TCPSocket {
      * num = how many incoming connections that can be queued
      * returns 0 on success
      */
-    int listen(int num)
+    int listen(int num) const
       { return _listen(num); }
 
     /* Accept an incoming connection
      * returns a pointer to the client socket, which must later be deleted
      */
-    TCPSocket *accept()
+    TCPSocket *accept() const
       { return _accept(); }
 
     /* Receive data from socket
@@ -43,14 +43,14 @@ class TCPSocket {
      * returns a string with received data,
      *  which is empty if nothing is received
      */
-    std::string recv(int num)
+    std::string recv(int num) const
       { return _recv(num); }
 
     /* Send data to socket
      * message = data to send
      * returns 0 on success
      */
-    int send(const std::string &message)
+    int send(const std::string &message) const
       { return _send(message); }
 
     /* Close socket */
@@ -64,20 +64,29 @@ class TCPSocket {
     void reuseAddr(bool var);
 
     /* Get hostname of which the socket is connected to */
-    std::string getHostname();
+    std::string getHostname() const;
+
+    /* Forbidden methods */
     void operator=(const TCPSocket&) = delete;
 
   private:
-    void _close();
-    int _send(const std::string &message);
-    std::string _recv(int num);
-    int _connect(const std::string &hostname, int port);
+
+    /* Server */
     int _bind(int port);
-    int _listen(int num);
-    TCPSocket *_accept();
+    int _listen(int num) const;
+    TCPSocket *_accept() const;
+
+    /* Client */
+    int _connect(const std::string &hostname, int port);
+
+    /* Both */
     TCPSocket(int sock, const char *ip, IPV ip_version);
     int construct(const char *hostname, const char *port);
+    int _send(const std::string &message) const;
+    std::string _recv(int num) const;
+    void _close();
 
+    /* Member variables */
     const IPV ip_version_;
     int sock_;
     char *ip_;

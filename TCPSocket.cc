@@ -119,7 +119,7 @@ int TCPSocket::_bind(int port) {
   return construct(NULL, to_string(port).c_str());
 }
 
-int TCPSocket::_listen(int num) {
+int TCPSocket::_listen(int num) const {
   if (listen(sock_, num) == -1) {
     perror("listen");
     return 1;
@@ -127,7 +127,7 @@ int TCPSocket::_listen(int num) {
   return 0;
 }
 
-TCPSocket *TCPSocket::_accept() {
+TCPSocket *TCPSocket::_accept() const {
   struct sockaddr_storage client_addr;
   socklen_t socklen = sizeof(client_addr);
   int client = accept(sock_, (struct sockaddr *)&client_addr, &socklen);
@@ -148,7 +148,7 @@ TCPSocket *TCPSocket::_accept() {
   return new TCPSocket(client, client_ip, ip_version_);
 }
 
-string TCPSocket::_recv(int num) {
+string TCPSocket::_recv(int num) const {
   char *data = new char[num];
   int datalen = recv(sock_, data, num -1, 0);
   if (datalen == -1) {
@@ -162,7 +162,7 @@ string TCPSocket::_recv(int num) {
   return return_value;
 }
 
-int TCPSocket::_send(const string &message) {
+int TCPSocket::_send(const string &message) const {
   const char *data = message.c_str();
   int data_left = strlen(data);
   while (data_left > 0) {
@@ -182,6 +182,6 @@ void TCPSocket::_close() {
   ip_ = NULL;
 }
 
-string TCPSocket::getHostname() {
+string TCPSocket::getHostname() const {
   return string(ip_);
 }
