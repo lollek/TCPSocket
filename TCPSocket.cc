@@ -86,6 +86,7 @@ int TCPSocket::construct(const char *hostname, const char *port) {
       if (bind(sock_, p->ai_addr, p->ai_addrlen) == -1) {
         close(sock_);
         perror("bind");
+        sock_ = -1;
       } else {
         break;
       }
@@ -93,6 +94,7 @@ int TCPSocket::construct(const char *hostname, const char *port) {
     } else {
       if (connect(sock_, p->ai_addr, p->ai_addrlen) == -1) {
         close(sock_);
+        perror("connect");
         sock_ = -1;
       } else {
         break;
@@ -102,11 +104,7 @@ int TCPSocket::construct(const char *hostname, const char *port) {
 
   freeaddrinfo(results);
 
-  if (sock_ == -1) {
-    cerr << "Unable to create socket (bind/connect)!\n";
-    return 1;
-  }
-  return 0;
+  return sock_ == -1;
 }
 
 int TCPSocket::_connect(const string &hostname, int port) {
@@ -158,6 +156,27 @@ string TCPSocket::_recv(int num) const {
 
   data[datalen] = '\0';
   string return_value(data);
+  delete[] data;
+  return return_value;
+}
+
+string TCPSocket::recvall() const {
+  const unsigned BUFSIZE = 1024;
+  char *data = new char[BUFSIZE];
+  int datalen = recv(sock_, data, BUFSIZE -1, 0);
+  if (datalen == -1 ) {
+    cerr << "Failed to read from client\n";
+    return "";
+  }
+
+  data[datalen] = '\0';
+  string return_value(data);
+  if (datalen == BUFSIZE -1) {
+    while ((datalen = recv(sock_, data, BUFSIZE -1, 0)) != 0) {
+      data[datalen] = '\0';
+      return_value += data;
+    }
+  }
   delete[] data;
   return return_value;
 }

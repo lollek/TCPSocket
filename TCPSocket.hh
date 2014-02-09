@@ -58,6 +58,10 @@ class TCPSocket {
       { return _close(); }
 #endif
 
+    /* Receive all data from socket
+     * This is basically calling recv() several times */
+    std::string recvall() const;
+
     /* Set if socket should reuse port or not
      * Must be set before bind to have an effect 
      */
