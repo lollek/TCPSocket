@@ -1,5 +1,6 @@
 
 #include <string>
+#include <vector>
 
 enum IPV { IPV4, IPV6 };
 
@@ -43,14 +44,14 @@ class TCPSocket {
      * returns a string with received data,
      *  which is empty if nothing is received
      */
-    std::string recv(int num) const
+    std::vector<char> recv(int num) const
       { return _recv(num); }
 
     /* Send data to socket
      * message = data to send
      * returns 0 on success
      */
-    int send(const std::string &message) const
+    int send(const std::vector<char> &message) const
       { return _send(message); }
 
     /* Close socket */
@@ -60,7 +61,7 @@ class TCPSocket {
 
     /* Receive all data from socket
      * This is basically calling recv() several times */
-    std::string recvall() const;
+    std::vector<char> recvall() const;
 
     /* Set if socket should reuse port or not
      * Must be set before bind to have an effect 
@@ -86,8 +87,8 @@ class TCPSocket {
     /* Both */
     TCPSocket(int sock, const char *ip, IPV ip_version);
     int construct(const char *hostname, const char *port);
-    int _send(const std::string &message) const;
-    std::string _recv(int num) const;
+    int _send(const std::vector<char> &message) const;
+    std::vector<char> _recv(int num) const;
     void _close();
 
     /* Member variables */

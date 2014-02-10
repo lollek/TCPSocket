@@ -146,44 +146,43 @@ TCPSocket *TCPSocket::_accept() const {
   return new TCPSocket(client, client_ip, ip_version_);
 }
 
-string TCPSocket::_recv(int num) const {
-  char *data = new char[num];
-  int datalen = recv(sock_, data, num -1, 0);
+vector<char> TCPSocket::_recv(int num) const {
+  vector<char> data(num);
+  int datalen = recv(sock_, data.data(), num -1, 0);
   if (datalen == -1) {
     cerr << "Failed to read from client\n";
-    return "";
+    return vector<char>(0);
+  } else {
+    data.resize(datalen);
+    return data;
   }
-
-  data[datalen] = '\0';
-  string return_value(data);
-  delete[] data;
-  return return_value;
 }
 
-string TCPSocket::recvall() const {
+vector<char> TCPSocket::recvall() const {
   const unsigned BUFSIZE = 1024;
-  char *data = new char[BUFSIZE];
-  int datalen = recv(sock_, data, BUFSIZE -1, 0);
+  vector<char> data(BUFSIZE);
+  int datalen = recv(sock_, data.data(), BUFSIZE, 0);
   if (datalen == -1 ) {
     cerr << "Failed to read from client\n";
-    return "";
-  }
+    return vector<char>(0);
+  } else {
+    data.resize(datalen);
 
-  data[datalen] = '\0';
-  string return_value(data);
-  if (datalen == BUFSIZE -1) {
-    while ((datalen = recv(sock_, data, BUFSIZE -1, 0)) != 0) {
-      data[datalen] = '\0';
-      return_value += data;
+    if (datalen == BUFSIZE) {
+      vector<char> tmp(BUFSIZE);
+      while ((datalen = recv(sock_, tmp.data(), BUFSIZE, 0)) != 0) {
+        for (int i = 0; i < datalen; ++i) {
+          data.push_back(tmp[i]);
+        }
+      }
     }
+    return data;
   }
-  delete[] data;
-  return return_value;
 }
 
-int TCPSocket::_send(const string &message) const {
-  const char *data = message.c_str();
-  int data_left = strlen(data);
+int TCPSocket::_send(const vector<char> &message) const {
+  const char *data = message.data();
+  int data_left = message.size();
   while (data_left > 0) {
     int tmp = send(sock_, data +strlen(data) -data_left, data_left, 0);
     if (tmp == -1) {
