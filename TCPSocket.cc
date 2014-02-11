@@ -170,10 +170,13 @@ vector<char> TCPSocket::recvall() const {
 
     if (datalen == BUFSIZE) {
       vector<char> tmp(BUFSIZE);
-      while ((datalen = recv(sock_, tmp.data(), BUFSIZE, 0)) != 0) {
+      while ((datalen = recv(sock_, tmp.data(), BUFSIZE, 0)) > 0) {
         for (int i = 0; i < datalen; ++i) {
           data.push_back(tmp[i]);
         }
+      }
+      for (int i = 0; i < datalen; ++i) {
+        data.push_back(tmp[i]);
       }
     }
     return data;
