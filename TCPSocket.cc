@@ -148,7 +148,7 @@ TCPSocket *TCPSocket::_accept() const {
 
 vector<char> TCPSocket::_recv(int num) const {
   vector<char> data(num);
-  int datalen = recv(sock_, data.data(), num -1, 0);
+  int datalen = recv(sock_, data.data(), num, 0);
   if (datalen == -1) {
     cerr << "Failed to read from client\n";
     return vector<char>(0);
