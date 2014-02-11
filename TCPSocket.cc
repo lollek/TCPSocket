@@ -187,7 +187,7 @@ int TCPSocket::_send(const vector<char> &message) const {
   const char *data = message.data();
   int data_left = message.size();
   while (data_left > 0) {
-    int tmp = send(sock_, data +strlen(data) -data_left, data_left, 0);
+    int tmp = send(sock_, data +message.size() -data_left, data_left, 0);
     if (tmp == -1) {
       cerr << "Failed to send!\n";
       return 1;
