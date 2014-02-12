@@ -130,7 +130,6 @@ TCPSocket *TCPSocket::_accept() const {
   socklen_t socklen = sizeof(client_addr);
   int client = accept(sock_, (struct sockaddr *)&client_addr, &socklen);
   if (client == -1) {
-    perror("accept");
     return NULL;
   }
 
