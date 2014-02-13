@@ -29,7 +29,7 @@ int main() {
     }
     cout << "Received connection from " << client->getHostname() << endl;
     cout << "Receiving data" << endl;
-    string data = client->recv(1024);
+    string data = client->recv(1024).data();
     cout << "Sending data" << endl;
     client->send(data);
     cout << "Closing connection" << endl;

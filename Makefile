@@ -8,4 +8,6 @@ tests: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o TCPSocket_example/example_client $(OBJS) TCPSocket_example/example_client.cc
 	$(CXX) $(CXXFLAGS) -o TCPSocket_example/example_server $(OBJS) TCPSocket_example/example_server.cc
 
+clean:
+	$(RM) $(OBJS) TCPSocket_example/example_client TCPSocket_example/example_server
 

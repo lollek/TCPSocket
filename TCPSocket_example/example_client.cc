@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
   cout << "Sending data" << endl;
   socket.send(data);
   cout << "Receiving data" << endl;
-  data = socket.recv(1024);
+  data = socket.recv(1024).data();
   cout << "Received data:\"" << data << "\"" << endl;
   cout << "Closing socket" << endl;
   socket.close();
