@@ -8,6 +8,7 @@ class TCPSocket {
   public:
     TCPSocket (IPV ip_version);
     TCPSocket (const TCPSocket &other);
+    TCPSocket &operator=(const TCPSocket &other);
     ~TCPSocket();
 
     /* Connects to remote host
@@ -63,9 +64,6 @@ class TCPSocket {
 
     /* Get hostname of which the socket is connected to */
     std::string getHostname() const;
-
-    /* Forbidden methods */
-    void operator=(const TCPSocket&) = delete;
 
   private:
 
