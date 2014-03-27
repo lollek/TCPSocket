@@ -49,6 +49,7 @@ TCPSocket &TCPSocket::operator=(const TCPSocket &other) {
 }
 
 TCPSocket::~TCPSocket() {
+  close();
   delete[] ip_;
   ip_ = NULL;
 }
@@ -209,8 +210,7 @@ int TCPSocket::send(const char *data, long data_length) const {
 
 void TCPSocket::close() {
   ::close(sock_);
-  delete[] ip_;
-  ip_ = NULL;
+  memset(ip_, 0, INET6_ADDRSTRLEN);
 }
 
 string TCPSocket::getHostname() const {
