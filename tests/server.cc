@@ -45,9 +45,9 @@ TEST(Connect, ipv4_copycontructor) {
   ASSERT_EQ(server_constructor.bind(1337), 0);
   ASSERT_EQ(server_constructor.listen(10), 0);
   ASSERT_EQ(client.connect("localhost", 1337), 0);
-  //server = server_constructor;
-  client.close();
   server_constructor.close();
+  client.close();
+  server.close();
 
 
 }

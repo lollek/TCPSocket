@@ -64,6 +64,9 @@ class TCPSocket {
     /* Get hostname of which the socket is connected to */
     std::string getHostname() const;
 
+    /* Disabled */
+    TCPSocket &operator=(const TCPSocket &other) = delete;
+
   private:
 
     TCPSocket(int sock, const char *ip, IPV ip_version);
