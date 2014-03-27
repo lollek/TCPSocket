@@ -8,7 +8,6 @@ class TCPSocket {
   public:
     TCPSocket (IPV ip_version);
     TCPSocket (const TCPSocket &other);
-    TCPSocket &operator=(const TCPSocket &other);
     ~TCPSocket();
 
     /* Connects to remote host

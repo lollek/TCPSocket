@@ -26,8 +26,7 @@ TCPSocket::TCPSocket(const TCPSocket &other) :
   ip_(new char[INET6_ADDRSTRLEN]),
   reuseaddr_(other.reuseaddr_)
 {
-  strncpy(ip_, other.ip_, INET6_ADDRSTRLEN);
-  ip_[INET6_ADDRSTRLEN -1] = '\0';
+  memcpy(ip_, other.ip_, INET6_ADDRSTRLEN);
 }
 
 TCPSocket::TCPSocket(int sock, const char *ip, IPV ip_version) :
@@ -36,16 +35,7 @@ TCPSocket::TCPSocket(int sock, const char *ip, IPV ip_version) :
   ip_(new char[INET6_ADDRSTRLEN]),
   reuseaddr_(false)
 {
-  strncpy(ip_, ip, INET6_ADDRSTRLEN);
-  ip_[INET6_ADDRSTRLEN -1] = '\0';
-}
-
-TCPSocket &TCPSocket::operator=(const TCPSocket &other) {
-  if (this != &other) {
-    TCPSocket clone(other);
-    *this = clone;
-  }
-  return *this;
+  memcpy(ip_, ip, INET6_ADDRSTRLEN);
 }
 
 TCPSocket::~TCPSocket() {
