@@ -30,6 +30,18 @@ TEST(Connect, ipv6) {
   server.close();
 }
 
+TEST(FailedConnect, ipv4) {
+  TCPSocket client(IPV4);
+  ASSERT_EQ(client.connect("localhost", 1337), 1);
+  client.close();
+}
+
+TEST(FailedConnect, ipv6) {
+  TCPSocket client(IPV6);
+  ASSERT_EQ(client.connect("localhost", 1337), 1);
+  client.close();
+}
+
 TEST(Connect, ipv4_copycontructor) {
   TCPSocket server_constructor(IPV4);
   server_constructor.reuseAddr(1);
