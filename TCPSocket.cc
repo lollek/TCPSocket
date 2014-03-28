@@ -15,7 +15,8 @@ TCPSocket::TCPSocket(IPV ip_version) :
   ip_version_(ip_version),
   sock_(-1),
   ip_(new char[INET6_ADDRSTRLEN]),
-  reuseaddr_(false)
+  reuseaddr_(false),
+  last_error_()
 {
   memset(ip_, 0, INET6_ADDRSTRLEN);
 }
@@ -24,7 +25,8 @@ TCPSocket::TCPSocket(const TCPSocket &other) :
   ip_version_(other.ip_version_),
   sock_(other.sock_),
   ip_(new char[INET6_ADDRSTRLEN]),
-  reuseaddr_(other.reuseaddr_)
+  reuseaddr_(other.reuseaddr_),
+  last_error_(other.last_error_)
 {
   memcpy(ip_, other.ip_, INET6_ADDRSTRLEN);
 }
@@ -33,7 +35,8 @@ TCPSocket::TCPSocket(int sock, const char *ip, IPV ip_version) :
   ip_version_(ip_version),
   sock_(sock),
   ip_(new char[INET6_ADDRSTRLEN]),
-  reuseaddr_(false)
+  reuseaddr_(false),
+  last_error_()
 {
   memcpy(ip_, ip, INET6_ADDRSTRLEN);
 }
@@ -60,15 +63,14 @@ int TCPSocket::construct(const char *hostname, const char *port) {
   struct addrinfo *results = NULL;
   int status = getaddrinfo(hostname, port, &hints, &results);
   if (status != 0) {
-    cerr << "Error while looking up address info: "
-         << gai_strerror(status) << '\n';
+    setLastError("getaddrinfo: ", gai_strerror(status));
     return 1;
   }
 
   for (struct addrinfo *p = results; p != NULL; p = p->ai_next) {
     sock_ = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
     if (sock_ == -1) {
-      perror("socket:");
+      setLastError("socket: ", strerror(errno));
       continue;
     }
 
@@ -77,13 +79,17 @@ int TCPSocket::construct(const char *hostname, const char *port) {
         int one = 1;
         if (setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR,
                        &one, sizeof(one)) == -1) {
-          perror("setsockopt");
+          setLastError("setsockopt: ", strerror(errno));
+          freeaddrinfo(results);
+          ::close(sock_);
+          sock_ = -1;
+          return 1;
         }
       }
 
       if (::bind(sock_, p->ai_addr, p->ai_addrlen) == -1) {
+        setLastError("bind: ", strerror(errno));
         ::close(sock_);
-        perror("bind");
         sock_ = -1;
       } else {
         break;
@@ -91,8 +97,8 @@ int TCPSocket::construct(const char *hostname, const char *port) {
 
     } else {
       if (::connect(sock_, p->ai_addr, p->ai_addrlen) == -1) {
+        setLastError("connect: ", strerror(errno));
         ::close(sock_);
-        perror("connect");
         sock_ = -1;
       } else {
         break;
@@ -115,19 +121,20 @@ int TCPSocket::bind(int port) {
   return construct(NULL, to_string(port).c_str());
 }
 
-int TCPSocket::listen(int num) const {
+int TCPSocket::listen(int num) {
   if (::listen(sock_, num) == -1) {
-    perror("listen");
+    setLastError("listen: ", strerror(errno));
     return 1;
   }
   return 0;
 }
 
-TCPSocket *TCPSocket::accept() const {
+TCPSocket *TCPSocket::accept() {
   struct sockaddr_storage client_addr;
   socklen_t socklen = sizeof(client_addr);
   int client = ::accept(sock_, (struct sockaddr *)&client_addr, &socklen);
   if (client == -1) {
+    setLastError("accept: ", strerror(errno));
     return NULL;
   }
 
@@ -143,11 +150,11 @@ TCPSocket *TCPSocket::accept() const {
   return new TCPSocket(client, client_ip, ip_version_);
 }
 
-vector<char> TCPSocket::recv(int num) const {
+vector<char> TCPSocket::recv(int num) {
   vector<char> data(num);
   int datalen = ::recv(sock_, data.data(), num, 0);
   if (datalen == -1) {
-    cerr << "Failed to read from client\n";
+    setLastError("recv: ", strerror(errno));
     return vector<char>(0);
   } else {
     data.resize(datalen);
@@ -155,12 +162,12 @@ vector<char> TCPSocket::recv(int num) const {
   }
 }
 
-vector<char> TCPSocket::recvall() const {
+vector<char> TCPSocket::recvall() {
   const unsigned BUFSIZE = 1024;
   vector<char> data(BUFSIZE);
   int datalen = ::recv(sock_, data.data(), BUFSIZE, 0);
   if (datalen == -1 ) {
-    cerr << "Failed to read from client\n";
+    setLastError("recv: ", strerror(errno));
     return vector<char>(0);
   } else {
     data.resize(datalen);
@@ -177,20 +184,20 @@ vector<char> TCPSocket::recvall() const {
   }
 }
 
-int TCPSocket::send(const vector<char> &message) const {
+int TCPSocket::send(const vector<char> &message) {
   return send(message.data(), message.size());
 }
 
-int TCPSocket::send(const string &message) const {
+int TCPSocket::send(const string &message) {
   return send(message.c_str(), message.length());
 }
 
-int TCPSocket::send(const char *data, long data_length) const {
+int TCPSocket::send(const char *data, long data_length) {
   int data_left = data_length;
   while (data_left > 0) {
     int tmp = ::send(sock_, data +data_length -data_left, data_left, 0);
     if (tmp == -1) {
-      cerr << "Failed to send!\n";
+      setLastError("send: ", strerror(errno));
       return 1;
     }
     data_left -= tmp;
@@ -205,4 +212,13 @@ void TCPSocket::close() {
 
 string TCPSocket::getHostname() const {
   return string(ip_);
+}
+
+void TCPSocket::setLastError(const char *part1, const char *part2) {
+  last_error_ = part1;
+  last_error_ += part2;
+}
+
+const string &TCPSocket::getLastError() const {
+  return last_error_;
 }
