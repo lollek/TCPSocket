@@ -1,3 +1,5 @@
+#ifndef __LOLLEK_TCPSOCKET_HH__
+#define __LOLLEK_TCPSOCKET_HH__
 
 #include <string>
 #include <vector>
@@ -78,3 +80,5 @@ class TCPSocket {
     char *ip_;
     bool reuseaddr_;
 };
+
+#endif //__LOLLEK_TCPSOCKET_HH__
